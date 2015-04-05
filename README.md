@@ -12,4 +12,4 @@ for things that happen in the future. In this case, the thing is the response fr
 database.
 
 Also, it no longer uses third-party UI framework. I implement the modal using opacity and
-transition features of CSS3;
+transition features of CSS3.
