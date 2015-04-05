@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html ng-app="note">
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>To Do List With AngularJS</title>
+    <link href="style.css" type="text/css" rel="stylesheet"/>
+    <script src="angular.js"></script>
+    <script>
+        angular.module("note", ["backend"]);
+    </script>
+    <script src="controllers/note.js"></script>
+    <script src="components/backend/backend.js"></script>
+    <script src="filters/customFilters.js"></script>
+    <script src="controllers/recordList.js"></script>
+
+</head>
+<body ng-controller="noteCtrl">
+
+<header>
+    <ul>
+        <li class="title"><p>Note</p></li>
+        <li class="gitBtn"><a href="https://github.com/hanshanHOPE" target="_blank">GitHub</a></li>
+        <li class="addBtn"><a href="#formContainer">Add</a></li>
+    </ul>
+</header>
+
+<div class="container" ng-controller="recordListCtrl">
+    <div class="content" ng-repeat="item in data.records | range:currentPage:pageSize">
+        <section class="text">
+            <header>
+                <span class="content-title">{{item.title}}</span>
+                <span class="content-date">{{item.time| getDate | date:'yyyy-M-d H:mm'}}</span>
+            </header>
+            <p>{{item.content}}</p>
+            <footer>
+                <nav>
+                    <a><i class="icon-bin" ng-click="deleteRecord(item.id)"></i></a>
+                    <a href="#formContainer"><i class="icon-pencil" ng-click="loadRecord(item.id)"></i></a>
+                </nav>
+            </footer>
+        </section>
+    </div>
+    <div class="page-btn">
+        <button class="btn btn-info" type="button" ng-click="backward()"><</button>
+        <button class="btn btn-info" type="button" ng-click="forward()">></button>
+    </div>
+    <div class="page-tag">
+        {{currentPage}}/{{pageNum}}
+    </div>
+</div>
+
+
+<div id="formContainer" class="containerStyle">
+    <div class="modal-content">
+        <div class="modal-header">
+            <a href="#" class="close" ng-click="clearBinding()"><span>&times;</span></a>
+            <h4 class="modal-title">Add Note</h4>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <input type="text" id="title" ng-model="editedRecord.title" required>
+            </div>
+            <div class="form-group">
+                <label for="content">Content:</label>
+                <textarea rows="5" cols="60" id="content" ng-model="editedRecord.content" required></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#" ng-click="saveRecord()">Save</a>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
