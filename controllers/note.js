@@ -5,9 +5,9 @@
 angular.module("note")
   .constant("recordListPageCount", 3)
   .controller("noteCtrl", function ($scope, backend, recordListPageCount) {
-    $scope.data = {};
-    $scope.editedRecord = {};
-    $scope.pageNum = 1;
+    $scope.data = {};             //object to store records
+    $scope.editedRecord = {};     //for editing
+    $scope.pageNum = 0;
     $scope.pageSize = recordListPageCount;
 
     function getRecords() {
@@ -18,17 +18,16 @@ angular.module("note")
     }
 
     function setPageNum() {
-      var total = $scope.data.records.length;
-      if (total % $scope.pageSize == 0) {
-        if(total>0) {
-          $scope.pageNum = total / $scope.pageSize;
-        }
-        else{
-          $scope.pageNum = 1;
-        }
+      var recordNum = $scope.data.records.length;
+      var ps = $scope.pageSize;
+      if (recordNum == 0) {
+        $scope.pageNum = 1;
+      }
+      else if (recordNum % ps == 0) {
+        $scope.pageNum = recordNum / ps;
       }
       else {
-        $scope.pageNum = (total - total % $scope.pageSize) / $scope.pageSize +1;
+        $scope.pageNum = ((recordNum - recordNum%ps)/ps + 1);
       }
     }
 
@@ -48,17 +47,34 @@ angular.module("note")
       record.time = new Date().getTime();
       record.content = $scope.editedRecord.content;
 
-      backend.saveRecord(record).then(function () {
-        $scope.editedRecord = null;
-        getRecords();
+      backend.saveRecord(record).then(function (newRecord) {
+        if (!record.id) {
+          $scope.data.records.push(newRecord);
+        }
+        else {
+          var dataLength = $scope.data.records.length;
+          for (var i = 0; i < dataLength ; i++) {
+            if ($scope.data.records[i].id == newRecord.id ) {
+              $scope.data.records[i] = newRecord;
+              break;
+            }
+          }
+        }
+        setPageNum();
       });
-
+      $scope.editedRecord = null;
     };
 
     $scope.deleteRecord = function (key) {
-      backend.deleteRecord(key).then(function () {
-        //further more, delete item from $scope.data.records directly
-        getRecords();
+      backend.deleteRecord(key).then(function (deletedKey) {
+        var dataLength = $scope.data.records.length;
+        for (var i = 0; i < dataLength ; i++) {
+          if ($scope.data.records[i].id == deletedKey ) {
+            $scope.data.records.splice(i,1);
+            break;
+          }
+        }
+        setPageNum();
       });
     };
 

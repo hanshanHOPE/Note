@@ -18,7 +18,7 @@ angular.module("backend", [])
       return true;
     }
 
-    function dbStatus() {
+    function dbStatus(){
       return hasOpenDB;
     }
 
@@ -75,7 +75,7 @@ angular.module("backend", [])
       }
 
       //used to add new record
-      var newItem = {};
+      var newItem = {}, recordId, requestGet;
 
       if(!record.id) {
         record.id = '';
@@ -88,19 +88,32 @@ angular.module("backend", [])
 
       var transaction = db.transaction(DB_STORE_NAME, 'readwrite');
 
-      transaction.oncomplete = function (event) {
-        deferred.resolve();
-      };
-
-      transaction.onerror = function (event) {
+      /*transaction.onerror = function (event) {
         deferred.reject();
-      };
+      };*/
 
       if (record.id === '') {
-        transaction.objectStore(DB_STORE_NAME).add(newItem);
+        var requestAdd = transaction.objectStore(DB_STORE_NAME).add(newItem);
+
+        requestAdd.onsuccess = function (event) {
+          recordId = event.target.result;
+          requestGet = transaction.objectStore(DB_STORE_NAME).get(recordId);
+          requestGet.onsuccess = function (event) {
+            deferred.resolve(event.target.result);
+          };
+        };
       }
       else {
-        transaction.objectStore(DB_STORE_NAME).put(record);
+        var requestPut = transaction.objectStore(DB_STORE_NAME).put(record);
+
+        requestPut.onsuccess = function (event) {
+          recordId = event.target.result;
+          requestGet = transaction.objectStore(DB_STORE_NAME).get(recordId);
+          requestGet.onsuccess = function (event) {
+            deferred.resolve(event.target.result);
+          };
+        };
+
       }
 
       return deferred.promise;
@@ -127,7 +140,7 @@ angular.module("backend", [])
       transaction.objectStore(DB_STORE_NAME).delete(key);
 
       transaction.oncomplete = function (event) {
-        deferred.resolve();
+        deferred.resolve(key);
       };
 
       return deferred.promise;
